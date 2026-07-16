@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Working Leave Application</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/@mui/material@5.14.20/umd/material-ui.development.js"></script>
+    <script src="https://unpkg.com/@mui/icons-material@5.14.20/umd/material-ui-icons.development.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState } = React;
+        const { 
+            Box, Typography, Button, Card, CardContent, TextField, Grid, 
+            Paper, Table, TableBody, TableCell, TableContainer, TableHead, 
+            TableRow, Chip, IconButton, Select, MenuItem, FormControl, 
+            InputLabel, FormControlLabel, Switch 
+        } = MaterialUI;
+        const { 
+            ArrowBack, Event, Send, CheckCircle, Cancel, Schedule, 
+            Person, Description, TrendingUp, Policy, Notifications 
+        } = MaterialUIIcons;
+
+        const WorkingLeaveApp = () => {
+            const [leaveRequests, setLeaveRequests] = useState([
+                {
+                    id: 1,
+                    employeeName: 'John Doe',
+                    employeeId: 'EMP001',
+                    department: 'Engineering',
+                    leaveType: 'Annual Leave',
+                    startDate: '2024-01-15',
+                    endDate: '2024-01-19',
+                    days: 5,
+                    reason: 'Family vacation',
+                    status: 'approved',
+                    appliedDate: '2024-01-10'
+                },
+                {
+                    id: 2,
+                    employeeName: 'Jane Smith',
+                    employeeId: 'EMP002',
+                    department: 'HR',
+                    leaveType: 'Sick Leave',
+                    startDate: '2024-01-20',
+                    endDate: '2024-01-21',
+                    days: 2,
+                    reason: 'Medical appointment',
+                    status: 'pending',
+                    appliedDate: '2024-01-19'
+                }
+            ]);
+
+            const [formData, setFormData] = useState({
+                leaveType: 'annual',
+                startDate: '',
+                endDate: '',
+                reason: '',
+                days: 0,
+                halfDay: false,
+                emergencyContact: '',
+                attachment: ''
+            });
+
+            const [showAnalytics, setShowAnalytics] = useState(false);
+            const [showPolicies, setShowPolicies] = useState(false);
+            const [showBalance, setShowBalance] = useState(false);
+
+            const handleSubmit = () => {
+                if (!formData.leaveType || !formData.startDate || !formData.endDate || !formData.reason) {
+                    alert('Please fill all required fields');
+                    return;
+                }
+
+                const newRequest = {
+                    id: leaveRequests.length + 1,
+                    employeeName: 'Current User',
+                    employeeId: 'EMP000',
+                    department: 'General',
+                    leaveType: formData.leaveType,
+                    startDate: formData.startDate,
+                    endDate: formData.endDate,
+                    days: formData.halfDay ? 0.5 : 1,
+                    reason: formData.reason,
+                    status: 'pending',
+                    appliedDate: new Date().toISOString().split('T')[0],
+                    emergencyContact: formData.emergencyContact,
+                    halfDay: formData.halfDay
+                };
+
+                setLeaveRequests([newRequest, ...leaveRequests]);
+                setFormData({
+                    leaveType: '',
+                    startDate: '',
+                    endDate: '',
+                    reason: '',
+                    days: 0,
+                    halfDay: false,
+                    emergencyContact: '',
+                    attachment: ''
+                });
+                alert('Leave application submitted successfully!');
+            };
+
+            const handleApprove = (id) => {
+                setLeaveRequests(prev => 
+                    prev.map(req => 
+                        req.id === id 
+                            ? { ...req, status: 'approved', approvedBy: 'HR Manager', approvedDate: new Date().toISOString().split('T')[0] }
+                            : req
+                    )
+                );
+                alert('Leave request approved!');
+            };
+
+            const handleReject = (id) => {
+                const reason = prompt('Please enter rejection reason:');
+                if (reason) {
+                    setLeaveRequests(prev => 
+                        prev.map(req => 
+                            req.id === id 
+                                ? { ...req, status: 'rejected', rejectionReason: reason, approvedBy: 'HR Manager', approvedDate: new Date().toISOString().split('T')[0] }
+                                : req
+                        )
+                    );
+                    alert('Leave request rejected!');
+                }
+            };
+
+            const getStatusColor = (status) => {
+                switch (status) {
+                    case 'approved': return '#4caf50';
+                    case 'pending': return '#ff9800';
+                    case 'rejected': return '#f44336';
+                    default: return '#757575';
+                }
+            };
+
+            return (
+                <Box sx={{ p: 3, minHeight: '100vh', backgroundColor: '#ffffff' }}>
+                    {/* Header */}
+                    <Box sx={{ 
+                        backgroundColor: '#1976d2', 
+                        color: 'white', 
+                        p: 3, 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <IconButton 
+                                color="inherit" 
+                                onClick={() => window.history.back()}
+                                sx={{ mr: 1 }}
+                            >
+                                <ArrowBack />
+                            </IconButton>
+                            <Typography variant="h4">
+                                Leave Management System
+                            </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button 
+                                color="inherit" 
+                                onClick={() => setShowAnalytics(!showAnalytics)}
+                                startIcon={<TrendingUp />}
+                            >
+                                Analytics
+                            </Button>
+                            <Button 
+                                color="inherit" 
+                                onClick={() => setShowPolicies(!showPolicies)}
+                                startIcon={<Policy />}
+                            >
+                                Policies
+                            </Button>
+                            <Button 
+                                color="inherit" 
+                                onClick={() => setShowBalance(!showBalance)}
+                                startIcon={<Notifications />}
+                            >
+                                Balance
+                            </Button>
+                        </Box>
+                    </Box>
+
+                    <Box sx={{ p: 3 }}>
+                        {/* Analytics Section */}
+                        {showAnalytics && (
+                            <Card sx={{ mb: 3 }}>
+                                <CardContent>
+                                    <Typography variant="h6" gutterBottom>
+                                        Leave Analytics
+                                    </Typography>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={4}>
+                                            <Paper sx={{ p: 2, textAlign: 'center' }}>
+                                                <Typography variant="h4" color="primary">12</Typography>
+                                                <Typography variant="body2">Total Requests</Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid item xs={12} sm={4}>
+                                            <Paper sx={{ p: 2, textAlign: 'center' }}>
+                                                <Typography variant="h4" color="success.main">8</Typography>
+                                                <Typography variant="body2">Approved</Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid item xs={12} sm={4}>
+                                            <Paper sx={{ p: 2, textAlign: 'center' }}>
+                                                <Typography variant="h4" color="warning.main">4</Typography>
+                                                <Typography variant="body2">Pending</Typography>
+                                            </Paper>
+                                        </Grid>
+                                    </Grid>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Policies Section */}
+                        {showPolicies && (
+                            <Card sx={{ mb: 3 }}>
+                                <CardContent>
+                                    <Typography variant="h6" gutterBottom>
+                                        Leave Policies
+                                    </Typography>
+                                    <Typography variant="body2" paragraph>
+                                        • Annual Leave: 21 days per year
+                                    </Typography>
+                                    <Typography variant="body2" paragraph>
+                                        • Sick Leave: 10 days per year
+                                    </Typography>
+                                    <Typography variant="body2" paragraph>
+                                        • Personal Leave: 5 days per year
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        • Half-day requests are available for all leave types
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Balance Section */}
+                        {showBalance && (
+                            <Card sx={{ mb: 3 }}>
+                                <CardContent>
+                                    <Typography variant="h6" gutterBottom>
+                                        Leave Balance
+                                    </Typography>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={4}>
+                                            <Paper sx={{ p: 2, textAlign: 'center' }}>
+                                                <Typography variant="h4" color="primary">15</Typography>
+                                                <Typography variant="body2">Annual Days Left</Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid item xs={12} sm={4}>
+                                            <Paper sx={{ p: 2, textAlign: 'center' }}>
+                                                <Typography variant="h4" color="success.main">8</Typography>
+                                                <Typography variant="body2">Sick Days Left</Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid item xs={12} sm={4}>
+                                            <Paper sx={{ p: 2, textAlign: 'center' }}>
+                                                <Typography variant="h4" color="warning.main">3</Typography>
+                                                <Typography variant="body2">Personal Days Left</Typography>
+                                            </Paper>
+                                        </Grid>
+                                    </Grid>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Leave Application Form */}
+                        <Card sx={{ mb: 3 }}>
+                            <CardContent>
+                                <Typography variant="h6" gutterBottom>
+                                    Apply for Leave
+                                </Typography>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6} md={3}>
+                                        <FormControl fullWidth>
+                                            <InputLabel>Leave Type</InputLabel>
+                                            <Select
+                                                value={formData.leaveType}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, leaveType: e.target.value }))}
+                                            >
+                                                <MenuItem value="annual">Annual Leave</MenuItem>
+                                                <MenuItem value="sick">Sick Leave</MenuItem>
+                                                <MenuItem value="personal">Personal Leave</MenuItem>
+                                            </Select>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={3}>
+                                        <TextField
+                                            fullWidth
+                                            type="date"
+                                            label="Start Date"
+                                            value={formData.startDate}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                                            InputLabelProps={{ shrink: true }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={3}>
+                                        <TextField
+                                            fullWidth
+                                            type="date"
+                                            label="End Date"
+                                            value={formData.endDate}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                                            InputLabelProps={{ shrink: true }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={3}>
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    checked={formData.halfDay}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, halfDay: e.target.checked }))}
+                                                />
+                                            }
+                                            label="Half Day"
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            multiline
+                                            rows={4}
+                                            label="Reason"
+                                            value={formData.reason}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
+                                            placeholder="Please provide detailed reason for leave..."
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Emergency Contact"
+                                            value={formData.emergencyContact}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, emergencyContact: e.target.value }))}
+                                            placeholder="Emergency contact number..."
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            fullWidth
+                                            startIcon={<Send />}
+                                            onClick={handleSubmit}
+                                        >
+                                            Submit Leave Application
+                                        </Button>
+                                    </Grid>
+                                </Grid>
+                            </CardContent>
+                        </Card>
+
+                        {/* Leave Requests Table */}
+                        <Card>
+                            <CardContent>
+                                <Typography variant="h6" gutterBottom>
+                                    Leave Requests
+                                </Typography>
+                                <TableContainer component={Paper} elevation={0}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>Employee</TableCell>
+                                                <TableCell>Department</TableCell>
+                                                <TableCell>Leave Type</TableCell>
+                                                <TableCell>Duration</TableCell>
+                                                <TableCell>Reason</TableCell>
+                                                <TableCell>Applied Date</TableCell>
+                                                <TableCell>Status</TableCell>
+                                                <TableCell>Actions</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {leaveRequests.map((request) => (
+                                                <TableRow key={request.id} hover>
+                                                    <TableCell>{request.employeeName}</TableCell>
+                                                    <TableCell>{request.department}</TableCell>
+                                                    <TableCell>{request.leaveType}</TableCell>
+                                                    <TableCell>{request.days} days</TableCell>
+                                                    <TableCell>{request.reason}</TableCell>
+                                                    <TableCell>{request.appliedDate}</TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label={request.status}
+                                                            size="small"
+                                                            sx={{
+                                                                backgroundColor: getStatusColor(request.status),
+                                                                color: 'white'
+                                                            }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {request.status === 'pending' && (
+                                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                <Button
+                                                                    size="small"
+                                                                    variant="contained"
+                                                                    color="success"
+                                                                    startIcon={<CheckCircle />}
+                                                                    onClick={() => handleApprove(request.id)}
+                                                                >
+                                                                    Approve
+                                                                </Button>
+                                                                <Button
+                                                                    size="small"
+                                                                    variant="contained"
+                                                                    color="error"
+                                                                    startIcon={<Cancel />}
+                                                                    onClick={() => handleReject(request.id)}
+                                                                >
+                                                                    Reject
+                                                                </Button>
+                                                            </Box>
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </CardContent>
+                        </Card>
+                    </Box>
+                </Box>
+            );
+        };
+
+        ReactDOM.render(<WorkingLeaveApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
